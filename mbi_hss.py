@@ -6,7 +6,6 @@ st.set_page_config(
     layout="wide"
 )
 
-
 # Função para calcular MBI-HSS
 def calcular_mbi_hss(respostas):
     if len(respostas) != 22:
@@ -14,9 +13,9 @@ def calcular_mbi_hss(respostas):
         return None
 
     # Índices de cada dimensão
-    indices_ee = [0, 1, 2, 5, 7, 12, 13, 15, 19]  # Exaustão emocional
-    indices_dp = [4, 9, 10, 14, 21]              # Despersonalização
-    indices_rp = [3, 6, 8, 11, 16, 17, 18, 20]   # Realização pessoal
+    indices_ee = [0, 1, 2, 5, 7, 12, 13, 15, 20]  # Exaustão emocional
+    indices_dp = [4, 10, 11, 14, 21]              # Despersonalização
+    indices_rp = [3, 6, 8, 9, 16, 17, 18, 19]      # Realização pessoal
 
     # Cálculo das pontuações
     escore_ee = sum(respostas[i] for i in indices_ee)
@@ -48,36 +47,36 @@ st.title("📊 Avaliação de Burnout (MBI-HSS)")
 st.write("O questionário abaixo mede três dimensões do burnout: **Exaustão Emocional, Despersonalização e Realização Pessoal**.")
 st.write("Responda cada pergunta selecionando a frequência com que você se sente da forma indicada.")
 
-# Criar lista de respostas
-respostas = []
+# Perguntas atualizadas
 perguntas = [
-    "Sinto-me emocionalmente exausto(a) pelo meu trabalho.",
-    "Sinto-me esgotado(a) no final de um dia de trabalho.",
-    "Sinto-me cansado(a) ao acordar e ter que enfrentar mais um dia de trabalho.",
-    "Sinto que posso ajudar as pessoas de maneira eficaz no trabalho.",
-    "Sinto que trato algumas pessoas como se fossem objetos.",
-    "Sinto que o trabalho está me desgastando.",
-    "Sinto que consigo lidar bem com os problemas emocionais no trabalho.",
-    "Sinto que estou no meu limite emocional.",
-    "Sinto que inspiro confiança nos meus colegas e pacientes.",
-    "Sinto-me indiferente com algumas pessoas no trabalho.",
-    "Sinto que estou me tornando insensível ao lidar com as pessoas.",
-    "Sinto-me realizado(a) ao trabalhar diretamente com as pessoas.",
-    "Sinto que estou consumido(a) pelo meu trabalho.",
-    "Sinto que não posso mais continuar do jeito que estou.",
-    "Sinto que trato as pessoas de forma fria ou impessoal.",
-    "Sinto que estou no meu limite de trabalho.",
-    "Sinto que consigo lidar eficazmente com os problemas que surgem no trabalho.",
-    "Sinto que estou ajudando as pessoas da melhor maneira possível.",
-    "Sinto-me bem ao ajudar outras pessoas.",
-    "Sinto que o meu trabalho está me desgastando emocionalmente.",
-    "Sinto-me feliz ao realizar um bom trabalho.",
-    "Sinto que as pessoas me deixam irritado(a) com seus problemas."
+    "Eu me sinto emocionalmente exausto pelo meu trabalho.",
+    "Eu me sinto esgotado ao final de um dia de trabalho.",
+    "Eu me sinto cansado quando me levanto de manhã e tenho que encarar outro dia de trabalho.",
+    "Eu posso entender facilmente o que sentem os meus pacientes acerca das coisas que acontecem no dia a dia.",
+    "Eu sinto que eu trato alguns dos meus pacientes como se eles fossem objetos.",
+    "Trabalhar com pessoas o dia inteiro é realmente um grande esforço pra mim.",
+    "Eu trato de forma adequada os problemas dos meus pacientes.",
+    "Eu me sinto esgotado com meu trabalho.",
+    "Eu sinto que estou influenciando positivamente a vida de outras pessoas através do meu trabalho.",
+    "Eu sinto que me tornei mais insensível com as pessoas desde que comecei este trabalho.",
+    "Eu sinto que este trabalho está me endurecendo emocionalmente.",
+    "Eu me sinto muito cheio de energia.",
+    "Eu me sinto muito frustrado com meu trabalho.",
+    "Eu sinto que estou trabalhando demais no meu emprego.",
+    "Eu não me importo realmente com o que acontece com alguns dos meus pacientes.",
+    "Trabalhar diretamente com pessoas me deixa muito estressado.",
+    "Eu posso criar facilmente um ambiente tranquilo com os meus pacientes.",
+    "Eu me sinto estimulado depois de trabalhar lado a lado com os meus pacientes.",
+    "Eu tenho realizado muitas coisas importantes neste trabalho.",
+    "No meu trabalho, eu me sinto como se estivesse no final do meu limite.",
+    "No meu trabalho eu lido com os problemas emocionais com calma.",
+    "Eu sinto que os pacientes me culpam por alguns dos seus problemas."
 ]
 
-# Criar sliders para entrada de respostas
+# Entrada de respostas
+respostas = []
 for i, pergunta in enumerate(perguntas):
-    resposta = st.slider(f"{i+1}. {pergunta}", 0, 6, 3)  # Valor inicial = 3 (neutro)
+    resposta = st.slider(f"{i+1}. {pergunta}", 0, 6, 3)
     respostas.append(resposta)
 
 # Botão para calcular resultado
@@ -97,4 +96,3 @@ if st.button("Calcular Burnout"):
             st.warning("⚠️ **Sinais Moderados de Burnout**: Algumas dimensões indicam risco. Atenção aos sinais!")
         else:
             st.success("✅ **Sem sinais de Burnout**: Seus resultados indicam baixos níveis de burnout. Continue cuidando do seu bem-estar!")
-
