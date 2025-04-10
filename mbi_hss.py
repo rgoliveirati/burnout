@@ -12,10 +12,15 @@ def calcular_mbi_hss(respostas):
         st.error("A lista de respostas deve conter exatamente 22 valores.")
         return None
 
-    # Índices de cada dimensão
-    indices_ee = [0, 1, 2, 5, 7, 12, 13, 15, 20]  # Exaustão emocional
-    indices_dp = [4, 10, 11, 14, 21]              # Despersonalização
-    indices_rp = [3, 6, 8, 9, 16, 17, 18, 19]      # Realização pessoal
+    # Índices de cada dimensão (ajustados para base 1 → subtrai-se 1 para usar como índice Python)
+    indices_ee = [1, 2, 3, 6, 8, 13, 14, 16, 21]
+    indices_dp = [5, 11, 12, 15, 22]
+    indices_rp = [4, 7, 9, 10, 17, 18, 19, 20]
+
+    # Corrigir para base 0 do Python
+    indices_ee = [i - 1 for i in indices_ee]
+    indices_dp = [i - 1 for i in indices_dp]
+    indices_rp = [i - 1 for i in indices_rp]
 
     # Cálculo das pontuações
     escore_ee = sum(respostas[i] for i in indices_ee)
