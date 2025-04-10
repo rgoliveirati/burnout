@@ -5,10 +5,10 @@ import plotly.express as px
 # Configuração da página
 st.set_page_config(page_title="Avaliação de Burnout (MBI-HSS)", page_icon="📚", layout="wide")
 
-# Índices das colunas correspondentes a cada dimensão do MBI-HSS
-indices_ee = ["1", "2", "3", "6", "8", "13", "14", "16", "20"]  # Exaustão emocional
-indices_dp = ["5", "10", "11", "15", "22"]  # Despersonalização
-indices_rp = ["4", "7", "9", "12", "17", "18", "19", "21"]  # Realização pessoal
+# Índices das colunas correspondentes a cada dimensão do MBI-HSS (começando em 1)
+indices_ee = ["1", "2", "3", "6", "8", "13", "14", "16", "21"]  # Exaustão emocional
+indices_dp = ["5", "11", "12", "15", "22"]                     # Despersonalização
+indices_rp = ["4", "7", "9", "10", "17", "18", "19", "20"]     # Realização pessoal
 
 # Função para cálculo e classificação
 def calcular_mbi_hss(row):
@@ -34,6 +34,7 @@ def calcular_mbi_hss(row):
 # Título da aplicação
 st.title("📊 Avaliação de Burnout (MBI-HSS)")
 st.write("Carregue um arquivo Excel com as respostas dos participantes ao questionário MBI-HSS.")
+st.write("As colunas do Excel devem estar nomeadas de '1' a '22', representando cada uma das perguntas.")
 
 # Upload do arquivo
 uploaded_file = st.file_uploader("📁 Faça upload do arquivo Excel", type=["xlsx"])
@@ -41,7 +42,7 @@ uploaded_file = st.file_uploader("📁 Faça upload do arquivo Excel", type=["xl
 if uploaded_file is not None:
     df = pd.read_excel(uploaded_file)
     df_scores = df.apply(calcular_mbi_hss, axis=1)
-    df_scores.insert(0, "Instância", df["Instância"])
+    df_scores.insert(0, "Instância", df["Instância"] if "Instância" in df.columns else df.index + 1)
 
     if st.button("Calcular Burnout"):
         st.subheader("📄 Resultados Individuais")
