@@ -12,10 +12,12 @@ def calcular_mbi_hss(respostas):
     if len(respostas) != 22:
         return None
 
-    indices_ee = [1, 2, 3, 6, 8, 13, 14, 16, 20]
-    indices_dp = [5, 10, 11, 15, 22]
-    indices_rp = [4, 7, 9, 12, 17, 18, 19, 21]
+    # Índices corrigidos conforme solicitado
+    indices_ee = [1, 2, 3, 6, 8, 13, 14, 16, 21]  # Exaustão emocional
+    indices_dp = [5, 11, 12, 15, 22]              # Despersonalização
+    indices_rp = [4, 7, 9, 10, 17, 18, 19, 20]     # Realização pessoal
 
+    # Ajustar para base 0 (índices de Python)
     indices_ee = [i - 1 for i in indices_ee]
     indices_dp = [i - 1 for i in indices_dp]
     indices_rp = [i - 1 for i in indices_rp]
@@ -47,9 +49,9 @@ st.title("📊 Avaliação de Burnout (MBI-HSS)")
 
 # Seção 1: Autoavaliação
 st.header("📍 Autoavaliação Individual")
-
 st.write("Responda cada pergunta selecionando a frequência com que você se sente da forma indicada.")
 
+# Lista de perguntas
 perguntas = [
     "Eu me sinto emocionalmente exausto pelo meu trabalho.",
     "Eu me sinto esgotado ao final de um dia de trabalho.",
@@ -98,7 +100,6 @@ if st.button("Calcular Burnout"):
 
 # Seção 2: Upload de arquivo e análise coletiva
 st.header("📁 Análise de Várias Instâncias")
-
 arquivo = st.file_uploader("Envie um arquivo Excel com as respostas de múltiplos profissionais", type=["xlsx"])
 
 if arquivo is not None:
