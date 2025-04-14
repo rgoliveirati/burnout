@@ -5,10 +5,10 @@ import plotly.express as px
 # Configuração da página
 st.set_page_config(page_title="Avaliação de Burnout (MBI-HSS)", page_icon="📚", layout="wide")
 
-# Índices das colunas correspondentes a cada dimensão do MBI-HSS (começando em 1)
+# Índices das colunas correspondentes a cada dimensão do MBI-HSS (nomes de colunas como strings)
 indices_ee = ["1", "2", "3", "6", "8", "13", "14", "16", "21"]  # Exaustão emocional
-indices_dp = ["5", "11", "12", "15", "22"]                     # Despersonalização
-indices_rp = ["4", "7", "9", "10", "17", "18", "19", "20"]     # Realização pessoal
+indices_dp = ["5", "11", "12", "15", "22"]                      # Despersonalização
+indices_rp = ["4", "7", "9", "10", "17", "18", "19", "20"]      # Realização pessoal
 
 # Função para cálculo e classificação
 def calcular_mbi_hss(row):
@@ -19,7 +19,7 @@ def calcular_mbi_hss(row):
     def classificar(valor, limites):
         if valor <= limites[0]:
             return "Baixo"
-        elif limites[0] < valor <= limites[1]:
+        elif valor <= limites[1]:
             return "Moderado"
         else:
             return "Alto"
@@ -34,7 +34,7 @@ def calcular_mbi_hss(row):
 # Título da aplicação
 st.title("📊 Avaliação de Burnout (MBI-HSS)")
 st.write("Carregue um arquivo Excel com as respostas dos participantes ao questionário MBI-HSS.")
-st.write("As colunas do Excel devem estar nomeadas de '1' a '22', representando cada uma das perguntas.")
+st.write("As colunas devem ser nomeadas de '1' a '22', cada uma representando uma pergunta.")
 
 # Upload do arquivo
 uploaded_file = st.file_uploader("📁 Faça upload do arquivo Excel", type=["xlsx"])
@@ -47,7 +47,6 @@ if uploaded_file is not None:
     if st.button("Calcular Burnout"):
         st.subheader("📄 Resultados Individuais")
 
-        # Avaliações individuais
         alertas = []
         for _, row in df_scores.iterrows():
             st.markdown(f"### {row['Instância']}")
@@ -56,16 +55,13 @@ if uploaded_file is not None:
             st.write(f"**Realização Pessoal**: {row['Realização Pessoal']} ({row['Nível RP']})")
 
             if row["Nível EE"] == "Alto" and row["Nível DP"] == "Alto" and row["Nível RP"] == "Baixo":
-                msg = "⚠️ **Alerta de Burnout**: Alta possibilidade de burnout."
-                st.error(msg)
+                st.error("⚠️ **Alerta de Burnout**: Alta possibilidade de burnout.")
                 alertas.append("Alto Risco")
             elif row["Nível EE"] == "Moderado" or row["Nível DP"] == "Moderado":
-                msg = "⚠️ **Sinais Moderados de Burnout**: Algumas dimensões indicam risco."
-                st.warning(msg)
+                st.warning("⚠️ **Sinais Moderados de Burnout**: Algumas dimensões indicam risco.")
                 alertas.append("Risco Moderado")
             else:
-                msg = "✅ **Sem sinais de Burnout**: Baixos níveis em todas as dimensões."
-                st.success(msg)
+                st.success("✅ **Sem sinais de Burnout**: Baixos níveis em todas as dimensões.")
                 alertas.append("Baixo Risco")
 
         df_scores["Classificação Final"] = alertas
@@ -78,9 +74,21 @@ if uploaded_file is not None:
                      title="Comparação das Dimensões do Burnout por Instância")
         st.plotly_chart(fig)
 
-        # Relatório dos achados
-        st.subheader("📝 Relatório dos Achados")
+        # Frequência por dimensão
+        st.subheader("📊 Distribuição por Dimensão (n e %)")
+        for dim, col in [("EE", "Nível EE"), ("DP", "Nível DP"), ("RP", "Nível RP")]:
+            dist = df_scores[col].value_counts().sort_index()
+            percent = (dist / len(df_scores) * 100).round(2).astype(str) + "%"
+            df_dist = pd.DataFrame({
+                "Nível": dist.index,
+                "n": dist.values,
+                "%": percent.values
+            })
+            st.markdown(f"**{dim}**")
+            st.dataframe(df_dist, use_container_width=True)
 
+        # Relatório final
+        st.subheader("📝 Relatório dos Achados")
         total = len(df_scores)
         alto = alertas.count("Alto Risco")
         moderado = alertas.count("Risco Moderado")
@@ -91,14 +99,14 @@ if uploaded_file is not None:
         - **Alta possibilidade de burnout:** {alto} ({(alto/total)*100:.1f}%)
         - **Risco moderado:** {moderado} ({(moderado/total)*100:.1f}%)
         - **Sem sinais de burnout:** {baixo} ({(baixo/total)*100:.1f}%)
-        
+
         ### Instruções e Recomendações
-        - Participantes com **alto risco** devem ser acompanhados de perto por profissionais da saúde mental.
-        - Participantes com **risco moderado** devem receber orientação e atenção para prevenir agravamentos.
-        - Participantes **sem sinais de burnout** devem manter hábitos saudáveis e ações preventivas.
+        - Participantes com **alto risco** devem ser acompanhados por profissionais da saúde mental.
+        - Participantes com **risco moderado** devem receber orientação preventiva.
+        - Participantes **sem sinais de burnout** devem manter hábitos saudáveis.
         """)
 
-        # Exportar arquivo
+        # Exportar Excel
         output_file = "resultados_mbi_hss_classificados.xlsx"
         df_scores.to_excel(output_file, index=False)
         with open(output_file, "rb") as file:
