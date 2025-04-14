@@ -1,4 +1,5 @@
 import streamlit as st
+import pandas as pd
 
 st.set_page_config(
     page_title="Avaliação de Burnout",
@@ -6,35 +7,30 @@ st.set_page_config(
     layout="wide"
 )
 
-# Função para calcular MBI-HSS
+# Função para calcular MBI-HSS para uma lista de respostas
 def calcular_mbi_hss(respostas):
     if len(respostas) != 22:
-        st.error("A lista de respostas deve conter exatamente 22 valores.")
         return None
 
-    # Índices de cada dimensão (ajustados para base 1 → subtrai-se 1 para usar como índice Python)
     indices_ee = [1, 2, 3, 6, 8, 13, 14, 16, 20]
     indices_dp = [5, 10, 11, 15, 22]
     indices_rp = [4, 7, 9, 12, 17, 18, 19, 21]
 
-    # Corrigir para base 0 do Python
     indices_ee = [i - 1 for i in indices_ee]
     indices_dp = [i - 1 for i in indices_dp]
     indices_rp = [i - 1 for i in indices_rp]
 
-    # Cálculo das pontuações
-    escore_ee = sum(respostas[i] for i in indices_ee)
-    escore_dp = sum(respostas[i] for i in indices_dp)
-    escore_rp = sum(respostas[i] for i in indices_rp)
-
-    # Classificação dos escores
     def classificar(valor, limites):
         if valor <= limites[0]:
             return "Baixo"
-        elif limites[0] < valor <= limites[1]:
+        elif valor <= limites[1]:
             return "Moderado"
         else:
             return "Alto"
+
+    escore_ee = sum(respostas[i] for i in indices_ee)
+    escore_dp = sum(respostas[i] for i in indices_dp)
+    escore_rp = sum(respostas[i] for i in indices_rp)
 
     classificacao_ee = classificar(escore_ee, [16, 26])
     classificacao_dp = classificar(escore_dp, [5, 9])
@@ -46,13 +42,14 @@ def calcular_mbi_hss(respostas):
         "Realização Pessoal": (escore_rp, classificacao_rp),
     }
 
-# Interface Streamlit
+# Título da aplicação
 st.title("📊 Avaliação de Burnout (MBI-HSS)")
 
-st.write("O questionário abaixo mede três dimensões do burnout: **Exaustão Emocional, Despersonalização e Realização Pessoal**.")
+# Seção 1: Autoavaliação
+st.header("📍 Autoavaliação Individual")
+
 st.write("Responda cada pergunta selecionando a frequência com que você se sente da forma indicada.")
 
-# Perguntas atualizadas
 perguntas = [
     "Eu me sinto emocionalmente exausto pelo meu trabalho.",
     "Eu me sinto esgotado ao final de um dia de trabalho.",
@@ -78,13 +75,11 @@ perguntas = [
     "Eu sinto que os pacientes me culpam por alguns dos seus problemas."
 ]
 
-# Entrada de respostas
 respostas = []
 for i, pergunta in enumerate(perguntas):
     resposta = st.slider(f"{i+1}. {pergunta}", 0, 6, 3)
     respostas.append(resposta)
 
-# Botão para calcular resultado
 if st.button("Calcular Burnout"):
     resultado = calcular_mbi_hss(respostas)
     
@@ -94,10 +89,41 @@ if st.button("Calcular Burnout"):
         for categoria, (escore, nivel) in resultado.items():
             st.write(f"**{categoria}**: {escore} ({nivel})")
         
-        # Avaliação final do Burnout
         if resultado["Exaustão Emocional"][1] == "Alto" and resultado["Despersonalização"][1] == "Alto" and resultado["Realização Pessoal"][1] == "Baixo":
             st.error("⚠️ **Alerta de Burnout**: Seus níveis indicam uma alta possibilidade de burnout.")
         elif resultado["Exaustão Emocional"][1] == "Moderado" or resultado["Despersonalização"][1] == "Moderado":
             st.warning("⚠️ **Sinais Moderados de Burnout**: Algumas dimensões indicam risco. Atenção aos sinais!")
         else:
             st.success("✅ **Sem sinais de Burnout**: Seus resultados indicam baixos níveis de burnout. Continue cuidando do seu bem-estar!")
+
+# Seção 2: Upload de arquivo e análise coletiva
+st.header("📁 Análise de Várias Instâncias")
+
+arquivo = st.file_uploader("Envie um arquivo Excel com as respostas de múltiplos profissionais", type=["xlsx"])
+
+if arquivo is not None:
+    df = pd.read_excel(arquivo)
+    dados = df.iloc[:, 1:]  # remove coluna 'Instância' ou similar
+
+    classificacoes = []
+    for _, row in dados.iterrows():
+        resultado = calcular_mbi_hss(row.tolist())
+        classificacoes.append({
+            "EE": resultado["Exaustão Emocional"][1],
+            "DP": resultado["Despersonalização"][1],
+            "RP": resultado["Realização Pessoal"][1],
+        })
+
+    df_result = pd.DataFrame(classificacoes)
+
+    st.subheader("📊 Distribuição das Classificações por Dimensão")
+    for dim in ["EE", "DP", "RP"]:
+        st.markdown(f"**{dim}**")
+        dist = df_result[dim].value_counts().sort_index()
+        percent = (dist / len(df_result) * 100).round(2).astype(str) + "%"
+        dist_df = pd.DataFrame({
+            "Nível": dist.index,
+            "n": dist.values,
+            "%": percent.values
+        })
+        st.dataframe(dist_df, use_container_width=True)
